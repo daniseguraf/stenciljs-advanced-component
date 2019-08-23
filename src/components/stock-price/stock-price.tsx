@@ -16,6 +16,7 @@ export class StockPrice {
   @State() fetchedPrice: number;
   @State() stockUserInput: string;
   @State() stockInputValid = false;
+  @State() error: string;
 
   onUserInput = (event: Event) => {
     this.stockUserInput = (event.target as HTMLInputElement).value;
@@ -35,19 +36,30 @@ export class StockPrice {
 
     fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=${AV_API_KEY}`)
     .then((res) => {
+      if (res.status !== 200) {
+        throw new Error('Invalid!')
+      }
       return res.json();
     })
     .then(parsedRes => {
-      console.log(parsedRes);
+      if (!parsedRes['Global Quote']['05. price']) {
+        throw new Error('Invalid symbol!')
+      }
+
+      this.error = null;
       this.fetchedPrice = +parsedRes['Global Quote']['05. price']
-      console.log(this.fetchedPrice);
     })
     .catch(err => {
-      console.log(err);
+      this.error = err.message;
     })
   }
 
   render() {
+    let dataContent = <p>Price: ${this.fetchedPrice} </p>;
+    if(this.error) {
+      dataContent = <p>{this.error}</p>
+    }
+
     return [
       <form onSubmit={this.onFetchStockPrice}>
         <input
@@ -56,11 +68,10 @@ export class StockPrice {
           value={this.stockUserInput}
           onInput={this.onUserInput}
         />
-        <button type="submit" disabled={!this.stockInputValid}>Fetch Data</button>
+        <button type="submit" disabled={!this.stockInputValid}>Fetch</button>
       </form>,
       <div>
-        <p>Price: ${this.fetchedPrice} </p>
-        <p>{this.stockUserInput}</p>
+        {dataContent}
       </div>
     ]
   }
