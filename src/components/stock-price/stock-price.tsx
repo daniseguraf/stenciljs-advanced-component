@@ -1,4 +1,4 @@
-import { Component, Prop, State, Element, h } from '@stencil/core'
+import { Component, Prop, State, Element, Watch, h } from '@stencil/core'
 
 import {AV_API_KEY} from './../../global/global'
 
@@ -18,9 +18,15 @@ export class StockPrice {
   @State() stockInputValid = false;
   @State() error: string;
 
-  @Prop() stockSymbol: string;
+  @Prop({mutable: true, reflectToAttr: true}) stockSymbol: string;
 
-
+  @Watch('stockSymbol')
+  stockSymbolChanged(newValue: string, oldValue: string) {
+    if(newValue !== oldValue) {
+      this.stockUserInput = newValue;
+      this.fetchStockPrice(newValue)
+    }
+  }
 
   onUserInput = (event: Event) => {
     this.stockUserInput = (event.target as HTMLInputElement).value;
@@ -34,17 +40,33 @@ export class StockPrice {
 
   onFetchStockPrice = (e: Event) => {
     e.preventDefault();
-    // const stockSymbol = (this.el.shadowRoot.querySelector('#stock-symbol') as HTMLInputElement).value;
-    const stockSymbol = this.stockInput.value;
+    this.stockSymbol = this.stockInput.value;
+  }
 
-    this.fetchStockPrice(stockSymbol)
+  componentWillLoad() {
+    console.log('componentWillLoad');
   }
 
   componentDidLoad() {
+    console.log('componentDidLoad');
+
     if(this.stockSymbol) {
-      console.log(this.stockSymbol);
+      this.stockUserInput = this.stockSymbol;
+      this.stockInputValid = true;
       this.fetchStockPrice(this.stockSymbol)
     }
+  }
+
+  componentWillUpdate() {
+    console.log('componentWillUpdate');
+  }
+
+  componentDidUpdate() {
+    console.log('componentDidUpdate');
+  }
+
+  componentDidUnload() {
+    console.log('componentDidUnload');
   }
 
   fetchStockPrice = (stockSymbol: string) => {
@@ -66,6 +88,7 @@ export class StockPrice {
   }
 
   render() {
+    console.log('render');
     let dataContent = <p>Price: ${this.fetchedPrice} </p>;
     if(this.error) {
       dataContent = <p>{this.error}</p>
