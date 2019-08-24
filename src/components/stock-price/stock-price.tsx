@@ -1,4 +1,4 @@
-import { Component, State, Element, h } from '@stencil/core'
+import { Component, Prop, State, Element, h } from '@stencil/core'
 
 import {AV_API_KEY} from './../../global/global'
 
@@ -18,6 +18,10 @@ export class StockPrice {
   @State() stockInputValid = false;
   @State() error: string;
 
+  @Prop() stockSymbol: string;
+
+
+
   onUserInput = (event: Event) => {
     this.stockUserInput = (event.target as HTMLInputElement).value;
 
@@ -30,28 +34,35 @@ export class StockPrice {
 
   onFetchStockPrice = (e: Event) => {
     e.preventDefault();
-    // console.log(this.el);
     // const stockSymbol = (this.el.shadowRoot.querySelector('#stock-symbol') as HTMLInputElement).value;
     const stockSymbol = this.stockInput.value;
 
-    fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=${AV_API_KEY}`)
-    .then((res) => {
-      if (res.status !== 200) {
-        throw new Error('Invalid!')
-      }
-      return res.json();
-    })
-    .then(parsedRes => {
-      if (!parsedRes['Global Quote']['05. price']) {
-        throw new Error('Invalid symbol!')
-      }
+    this.fetchStockPrice(stockSymbol)
+  }
 
-      this.error = null;
-      this.fetchedPrice = +parsedRes['Global Quote']['05. price']
-    })
-    .catch(err => {
-      this.error = err.message;
-    })
+  componentDidLoad() {
+    if(this.stockSymbol) {
+      console.log(this.stockSymbol);
+      this.fetchStockPrice(this.stockSymbol)
+    }
+  }
+
+  fetchStockPrice = (stockSymbol: string) => {
+    fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=${AV_API_KEY}`)
+      .then((res) => {
+        return res.json();
+      })
+      .then(parsedRes => {
+        if (!parsedRes['Global Quote']['05. price']) {
+          throw new Error('Invalid symbol!')
+        }
+
+        this.error = null;
+        this.fetchedPrice = +parsedRes['Global Quote']['05. price']
+      })
+      .catch(err => {
+        this.error = err.message;
+      })
   }
 
   render() {
