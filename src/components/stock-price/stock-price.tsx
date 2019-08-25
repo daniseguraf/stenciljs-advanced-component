@@ -43,30 +43,12 @@ export class StockPrice {
     this.stockSymbol = this.stockInput.value;
   }
 
-  componentWillLoad() {
-    console.log('componentWillLoad');
-  }
-
   componentDidLoad() {
-    console.log('componentDidLoad');
-
     if(this.stockSymbol) {
       this.stockUserInput = this.stockSymbol;
       this.stockInputValid = true;
       this.fetchStockPrice(this.stockSymbol)
     }
-  }
-
-  componentWillUpdate() {
-    console.log('componentWillUpdate');
-  }
-
-  componentDidUpdate() {
-    console.log('componentDidUpdate');
-  }
-
-  componentDidUnload() {
-    console.log('componentDidUnload');
   }
 
   fetchStockPrice = (stockSymbol: string) => {
@@ -88,7 +70,6 @@ export class StockPrice {
   }
 
   render() {
-    console.log('render');
     let dataContent = <p>Price: ${this.fetchedPrice} </p>;
     if(this.error) {
       dataContent = <p>{this.error}</p>
